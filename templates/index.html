@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} · Amazon EKS</title>
+
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #ff9900;
+            --accent-dark: #232f3e;
+            --ok: #16a34a;
+            --err: #dc2626;
+            --radius: 14px;
+            --shadow: 0 10px 30px -12px rgba(15, 23, 42, .15);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0b1220;
+                --surface: #131b2c;
+                --text: #e2e8f0;
+                --muted: #94a3b8;
+                --border: #233047;
+                --shadow: 0 10px 30px -12px rgba(0, 0, 0, .5);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--accent-dark), #0f1720 70%);
+            color: #fff;
+            padding: 56px 24px 72px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% -10%, rgba(255, 153, 0, .35), transparent 55%);
+            pointer-events: none;
+        }
+
+        header .eyebrow {
+            display: inline-block;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(255, 153, 0, .12);
+            border: 1px solid rgba(255, 153, 0, .4);
+            padding: 6px 14px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+        }
+
+        header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #cbd5e1;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .wrap {
+            max-width: 1040px;
+            margin: -40px auto 0;
+            padding: 0 24px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 26px;
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h2 .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: .92rem;
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: .8rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+        }
+
+        .badge.pending {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .badge.ok {
+            background: rgba(22, 163, 74, .12);
+            color: var(--ok);
+        }
+
+        .badge.err {
+            background: rgba(220, 38, 38, .12);
+            color: var(--err);
+        }
+
+        .badge .pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .badge.ok .pulse {
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .35;
+            }
+        }
+
+        dl.meta {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 16px;
+            font-size: .92rem;
+        }
+
+        dl.meta dt {
+            color: var(--muted);
+        }
+
+        dl.meta dd {
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        ul.tech {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        ul.tech li {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: .85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .endpoints code {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: .82rem;
+            margin-bottom: 8px;
+        }
+
+        .endpoints a.try {
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: .9rem;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: #e68a00;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        .btn.ghost:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 24px 40px;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <span class="eyebrow">Running on Amazon EKS</span>
+        <h1>{{ app_name }}</h1>
+        <p>Python Flask application deployed with Docker, Amazon ECR and Kubernetes.</p>
+    </header>
+
+    <div class="wrap">
+
+        <div class="grid">
+
+            <div class="card">
+                <h2><span class="dot"></span> Live Status</h2>
+                <div class="status-row">
+                    <span>API Health</span>
+                    <span id="health-badge" class="badge pending">Checking…</span>
+                </div>
+                <div class="status-row">
+                    <span>Secret Configured</span>
+                    <span id="secret-badge" class="badge pending">Checking…</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="dot"></span> Deployment Info</h2>
+                <dl class="meta">
+                    <dt>Application</dt>
+                    <dd>{{ app_name }}</dd>
+                    <dt>Environment</dt>
+                    <dd>{{ app_env }}</dd>
+                    <dt>Pod Hostname</dt>
+                    <dd>{{ hostname }}</dd>
+                </dl>
+            </div>
+
+            <div class="card">
+                <h2><span class="dot"></span> Technology Stack</h2>
+                <ul class="tech">
+                    <li>Python Flask</li>
+                    <li>Docker</li>
+                    <li>Amazon ECR</li>
+                    <li>Amazon EKS</li>
+                    <li>Kubernetes</li>
+                    <li>LoadBalancer</li>
+                    <li>HPA</li>
+                </ul>
+            </div>
+
+            <div class="card endpoints">
+                <h2><span class="dot"></span> API Endpoints</h2>
+                <code>GET /health <a class="try" href="/health" target="_blank" rel="noopener">Try →</a></code>
+                <code>GET /secret-status <a class="try" href="/secret-status" target="_blank" rel="noopener">Try →</a></code>
+                <code>GET /api/info <a class="try" href="/api/info" target="_blank" rel="noopener">Try →</a></code>
+            </div>
+
+        </div>
+
+        <div class="actions">
+            <button class="btn primary" onclick="refreshStatus()">Refresh Status</button>
+            <a class="btn ghost" href="/api/info" target="_blank" rel="noopener">View Raw JSON</a>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2026 Cloudnautic · AWS EKS Demo Project
+    </footer>
+
+    <script>
+        function setBadge(el, state, text) {
+            el.className = "badge " + state;
+            el.innerHTML = (state !== "pending" ? '<span class="pulse"></span>' : '') + text;
+        }
+
+        async function refreshStatus() {
+            const healthBadge = document.getElementById("health-badge");
+            const secretBadge = document.getElementById("secret-badge");
+
+            setBadge(healthBadge, "pending", "Checking…");
+            setBadge(secretBadge, "pending", "Checking…");
+
+            try {
+                const res = await fetch("/health");
+                const data = await res.json();
+                setBadge(healthBadge, res.ok && data.status === "healthy" ? "ok" : "err",
+                    res.ok && data.status === "healthy" ? "Healthy" : "Unhealthy");
+            } catch (e) {
+                setBadge(healthBadge, "err", "Unreachable");
+            }
+
+            try {
+                const res = await fetch("/secret-status");
+                const data = await res.json();
+                setBadge(secretBadge, data.secretConfigured ? "ok" : "err",
+                    data.secretConfigured ? "Configured" : "Missing");
+            } catch (e) {
+                setBadge(secretBadge, "err", "Unreachable");
+            }
+        }
+
+        refreshStatus();
+    </script>
+
+</body>
+
+</html>

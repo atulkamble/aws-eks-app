@@ -62,6 +62,8 @@ aws-eks-app-project/
 ├── requirements.txt
 ├── Dockerfile
 ├── .dockerignore
+├── templates/
+│   └── index.html
 └── kubernetes/
     ├── namespace.yaml
     ├── configmap.yaml
@@ -87,7 +89,7 @@ cd aws-eks-app-project
 ```python
 import os
 import socket
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
 
@@ -98,6 +100,16 @@ APP_PASSWORD = os.getenv("APP_PASSWORD", "not-configured")
 
 @app.route("/")
 def home():
+    return render_template(
+        "index.html",
+        app_name=APP_NAME,
+        app_env=APP_ENV,
+        hostname=socket.gethostname()
+    )
+
+
+@app.route("/api/info")
+def api_info():
     return jsonify(
         {
             "message": "Application successfully deployed on Amazon EKS",
@@ -152,6 +164,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+COPY templates/ templates/
 
 EXPOSE 5000
 
@@ -191,10 +204,16 @@ docker run -d \
   eks-python-app:v1
 ```
 
-Test:
+Test (opens the web UI in a browser, or fetch the HTML with curl):
 
 ```bash
 curl http://localhost:5000
+```
+
+JSON info endpoint:
+
+```bash
+curl http://localhost:5000/api/info
 ```
 
 Health check:
